@@ -102,7 +102,14 @@ try {
         flowResult.flow.forEach((row, index) => {
             row.forEach((flow, j) => {
                 if (flow > 0) {
-                    console.log(`Flow from ${index} to ${j}: ${flow}`);
+                    if(index === 0){
+                        console.log(`Flow from s to ${j}: ${flow}`);
+                    }
+                    else if(j === row.length - 1){
+                        console.log(`Flow from ${index} to t: ${flow}`);
+                    }else{
+                        console.log(`Flow from ${index} to ${j}: ${flow}`);
+                    }
                 }
             });
         });
@@ -145,7 +152,13 @@ try {
 
         console.log("Minimum cut edges:");
         minCut.forEach(edge => {
-            console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
+            if(edge.from === 0){
+                console.log(`Edge from s to ${edge.to} with capacity ${edge.capacity}`);
+            }else if(edge.to === n - 1){
+                console.log(`Edge from ${edge.from} to t with capacity ${edge.capacity}`);
+            }else{
+                console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
+            }
         });
 
         return { maxFlow, flow, minCut };
