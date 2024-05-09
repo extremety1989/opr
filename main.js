@@ -3,7 +3,6 @@ try {
         let reachable = new Array(capacity.length).fill(false);
         let queue = [source];
         reachable[source] = true;
-
         while (queue.length > 0) {
             let u = queue.shift();
 
@@ -33,8 +32,6 @@ try {
         let dist = Array(numVertices).fill(Infinity);
         let pred = Array(numVertices).fill(-1);
         dist[source] = 0;
-    
-        // Relax edges repeatedly
         for (let i = 0; i < numVertices - 1; i++) {
             for (let u = 0; u < numVertices; u++) {
                 for (let v = 0; v < numVertices; v++) {
@@ -56,16 +53,13 @@ try {
         while (true) {
             let { dist, pred } = bellmanFord(graph, costs, source, n);
     
-            if (dist[sink] === Infinity) break; // No path
-    
-            // Find maximum flow on that path
+            if (dist[sink] === Infinity) break;
             let pathFlow = Infinity;
             for (let v = sink; v != source; v = pred[v]) {
                 let u = pred[v];
                 pathFlow = Math.min(pathFlow, graph[u][v]);
             }
-    
-            // update capacities in the residual network
+
             for (let v = sink; v != source; v = pred[v]) {
                 let u = pred[v];
                 flow[u][v] += pathFlow;
@@ -88,23 +82,20 @@ try {
         const sourceNode = Number(firstLine[2]);
         const sinkNode = Number(firstLine[3]);
 
-        // Initialize the capacity matrix with zeros
         let capacity = Array.from({ length: numNodes }, () => new Array(numNodes).fill(0));
         let costs = Array.from({ length: numNodes }, () => new Array(numNodes).fill(Infinity));
 
-        // Fill the capacity matrix with the given capacities
+
         for (let j = 1; j <= numArcs; j++) {
             let arcDetails = lines[j].split(' ').map(Number);
             let emanatingNode = arcDetails[0];
             let terminatingNode = arcDetails[1];
             let maxCapacity = arcDetails[2];
             let cost = arcDetails[3];
-            // Ignore cost for now, as it's not used in max flow calculation
             capacity[emanatingNode][terminatingNode] = maxCapacity;
             costs[emanatingNode][terminatingNode] = cost;
         }
 
-        // Now, use the capacity matrix to find the maximum flow using Edmonds-Karp
         let flowResult = edmondsKarp(capacity, sourceNode, sinkNode);
         console.log("Maximum flow:", flowResult.maxFlow);
         console.log("Flow values for each arc:");
@@ -117,8 +108,6 @@ try {
         });
 
         let { flow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
-
-        // Output results
         console.log("Flow matrix:", flow);
         console.log("Minimum total cost:", minCost);
     }
@@ -171,11 +160,11 @@ try {
             let u = queue.shift();
 
             for (let v = 0; v < capacity.length; v++) {
-                if (!visited[v] && capacity[u][v] - flow[u][v] > 0) { // Check if there is available capacity
+                if (!visited[v] && capacity[u][v] - flow[u][v] > 0) {
                     queue.push(v);
                     visited[v] = true;
                     parent[v] = u;
-                    if (v === sink) return true; // We reached the sink
+                    if (v === sink) return true;
                 }
             }
         }
