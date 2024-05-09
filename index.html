@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Andranik Arakelov</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div
+      id="drop_zone"
+      ondrop="dropHandler(event);"
+      ondragover="dragOverHandler(event);"
+    >
+      <p>Drag one or more files to this <i>drop zone</i>.</p>
+      <input type="file" id="fileInput" onchange="dropHandler(event);">
+    </div>
+    <div id="results">
+
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>
