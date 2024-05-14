@@ -5,7 +5,6 @@ try {
         reachable[source] = true;
         while (queue.length > 0) {
             let u = queue.shift();
-
             for (let v = 0; v < capacity.length; v++) {
                 if (!reachable[v] && (capacity[u][v] - flow[u][v] > 0)) {
                     reachable[v] = true;
@@ -16,7 +15,7 @@ try {
         return reachable;
     }
 
-    function findMinCutEdges(capacity, flow, reachable) {
+    function findMinCutEdges(capacity, reachable) {
         let minCut = [];
         for (let u = 0; u < capacity.length; u++) {
             for (let v = 0; v < capacity.length; v++) {
@@ -44,16 +43,16 @@ try {
         }
         return { dist, pred };
     }
-    
+
     function successiveShortestPath(graph, costs, source, sink) {
         let n = graph.length;
         let flow = Array.from({ length: n }, () => new Array(n).fill(0));
         let minCost = 0;
-    
+
         while (true) {
             let { dist, pred } = bellmanFord(graph, costs, source, n);
-    
             if (dist[sink] === Infinity) break;
+
             let pathFlow = Infinity;
             for (let v = sink; v != source; v = pred[v]) {
                 let u = pred[v];
@@ -69,10 +68,9 @@ try {
                 graph[v][u] += pathFlow;
             }
         }
-    
+
         return { flow, minCost };
     }
-    
 
     function getData(result) {
         let lines = result.split('\n');
@@ -84,7 +82,6 @@ try {
 
         let capacity = Array.from({ length: numNodes }, () => new Array(numNodes).fill(0));
         let costs = Array.from({ length: numNodes }, () => new Array(numNodes).fill(Infinity));
-
 
         for (let j = 1; j <= numArcs; j++) {
             let arcDetails = lines[j].split(' ').map(Number);
@@ -102,12 +99,11 @@ try {
         flowResult.flow.forEach((row, index) => {
             row.forEach((flow, j) => {
                 if (flow > 0) {
-                    if(index === 0){
+                    if (index === 0) {
                         console.log(`Flow from s to ${j}: ${flow}`);
-                    }
-                    else if(j === row.length - 1){
+                    } else if (j === row.length - 1) {
                         console.log(`Flow from ${index} to t: ${flow}`);
-                    }else{
+                    } else {
                         console.log(`Flow from ${index} to ${j}: ${flow}`);
                     }
                 }
@@ -127,7 +123,6 @@ try {
         while (true) {
             let parent = Array.from({ length: n }, () => -1);
             let found = bfs(capacity, flow, parent, source, sink);
-
             if (!found) break;
 
             let pathFlow = Infinity;
@@ -146,17 +141,16 @@ try {
             maxFlow += pathFlow;
         }
 
-
         let reachable = findReachableNodes(capacity, flow, source);
-        let minCut = findMinCutEdges(capacity, flow, reachable);
+        let minCut = findMinCutEdges(capacity, reachable);
 
         console.log("Minimum cut edges:");
         minCut.forEach(edge => {
-            if(edge.from === 0){
+            if (edge.from === 0) {
                 console.log(`Edge from s to ${edge.to} with capacity ${edge.capacity}`);
-            }else if(edge.to === n - 1){
+            } else if (edge.to === n - 1) {
                 console.log(`Edge from ${edge.from} to t with capacity ${edge.capacity}`);
-            }else{
+            } else {
                 console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
             }
         });
@@ -184,7 +178,6 @@ try {
         return false;
     }
 
-
     function dropHandler(event) {
         event.preventDefault();
         if (event.dataTransfer) {
@@ -203,11 +196,10 @@ try {
             fr.onload = function () {
                 getData(fr.result);
             }
-
             fr.readAsText(event.target.files[0]);
         }
-
     }
+
     function dragOverHandler(event) {
         event.preventDefault();
     }
