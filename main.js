@@ -31,6 +31,7 @@ try {
         let dist = Array(numVertices).fill(Infinity);
         let pred = Array(numVertices).fill(-1);
         dist[source] = 0;
+    
         for (let i = 0; i < numVertices - 1; i++) {
             for (let u = 0; u < numVertices; u++) {
                 for (let v = 0; v < numVertices; v++) {
@@ -43,32 +44,34 @@ try {
         }
         return { dist, pred };
     }
-
-    function successiveShortestPath(graph, costs, source, sink) {
-        let n = graph.length;
+    
+    function successiveShortestPath(capacity, costs, source, sink) {
+        let n = capacity.length;
         let flow = Array.from({ length: n }, () => new Array(n).fill(0));
         let minCost = 0;
-
+    
+        let residualCapacity = capacity.map(row => row.slice());
+    
         while (true) {
-            let { dist, pred } = bellmanFord(graph, costs, source, n);
+            let { dist, pred } = bellmanFord(residualCapacity, costs, source, n);
             if (dist[sink] === Infinity) break;
-
+    
             let pathFlow = Infinity;
             for (let v = sink; v != source; v = pred[v]) {
                 let u = pred[v];
-                pathFlow = Math.min(pathFlow, graph[u][v]);
+                pathFlow = Math.min(pathFlow, residualCapacity[u][v]);
             }
-
+    
             for (let v = sink; v != source; v = pred[v]) {
                 let u = pred[v];
                 flow[u][v] += pathFlow;
                 flow[v][u] -= pathFlow;
+                residualCapacity[u][v] -= pathFlow;
+                residualCapacity[v][u] += pathFlow;
                 minCost += pathFlow * costs[u][v];
-                graph[u][v] -= pathFlow;
-                graph[v][u] += pathFlow;
             }
         }
-
+    
         return { flow, minCost };
     }
 
