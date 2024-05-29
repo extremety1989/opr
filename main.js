@@ -1,211 +1,217 @@
-try {
-    function findReachableNodes(capacity, flow, source) {
-        let reachable = new Array(capacity.length).fill(false);
-        let queue = [source];
-        reachable[source] = true;
-        while (queue.length > 0) {
-            let u = queue.shift();
-            for (let v = 0; v < capacity.length; v++) {
-                if (!reachable[v] && (capacity[u][v] - flow[u][v] > 0)) {
-                    reachable[v] = true;
-                    queue.push(v);
+function bfs(capacity, flow, source, sink, parent) {
+    let visited = new Array(capacity.length).fill(false);
+    let queue = [source];
+    visited[source] = true;
+
+    while (queue.length > 0) {
+        let u = queue.shift();
+        for (let v = 0; v < capacity.length; v++) {
+            if (!visited[v] && capacity[u][v] - flow[u][v] > 0) {
+                queue.push(v);
+                visited[v] = true;
+                parent[v] = u;
+                if (v === sink) {
+                    return true;
                 }
             }
         }
-        return reachable;
+    }
+    return false;
+}
+
+function edmondsKarp(capacity, source, sink) {
+    let n = capacity.length;
+    let flow = Array.from({ length: n }, () => new Array(n).fill(0));
+    let maxFlow = 0;
+
+    let parent = new Array(n);
+
+    while (bfs(capacity, flow, source, sink, parent)) {
+        let pathFlow = Infinity;
+        for (let v = sink; v !== source; v = parent[v]) {
+            let u = parent[v];
+            pathFlow = Math.min(pathFlow, capacity[u][v] - flow[u][v]);
+        }
+
+        for (let v = sink; v !== source; v = parent[v]) {
+            let u = parent[v];
+            flow[u][v] += pathFlow;
+            flow[v][u] -= pathFlow;
+        }
+
+        maxFlow += pathFlow;
     }
 
-    function findMinCutEdges(capacity, reachable) {
-        let minCut = [];
-        for (let u = 0; u < capacity.length; u++) {
-            for (let v = 0; v < capacity.length; v++) {
-                if (reachable[u] && !reachable[v] && capacity[u][v] > 0) {
-                    minCut.push({ from: u, to: v, capacity: capacity[u][v] });
+    return { maxFlow, flow };
+}
+
+
+function findReachableNodes(capacity, flow, source) {
+    let reachable = new Array(capacity.length).fill(false);
+    let queue = [source];
+    reachable[source] = true;
+    while (queue.length > 0) {
+        let u = queue.shift();
+        for (let v = 0; v < capacity.length; v++) {
+            if (!reachable[v] && capacity[u][v] - flow[u][v] > 0) {
+                reachable[v] = true;
+                queue.push(v);
+            }
+        }
+    }
+    return reachable;
+}
+
+function findMinCutEdges(capacity, reachable) {
+    let minCut = [];
+    for (let u = 0; u < capacity.length; u++) {
+        for (let v = 0; v < capacity.length; v++) {
+            if (reachable[u] && !reachable[v] && capacity[u][v] > 0) {
+                minCut.push({ from: u, to: v, capacity: capacity[u][v] });
+            }
+        }
+    }
+    return minCut;
+}
+
+function getDataMinCut(result) {
+    let lines = result.split('\n');
+    let firstLine = lines[0].split(' ');
+    const numNodes = Number(firstLine[0]);
+    const numArcs = Number(firstLine[1]);
+    const sourceNode = Number(firstLine[2]);
+    const sinkNode = Number(firstLine[3]);
+
+    let capacity = Array.from({ length: numNodes }, () => new Array(numNodes).fill(0));
+
+    for (let j = 1; j <= numArcs; j++) {
+        let arcDetails = lines[j].split(' ').map(Number);
+        let emanatingNode = arcDetails[0];
+        let terminatingNode = arcDetails[1];
+        let maxCapacity = arcDetails[2];
+        capacity[emanatingNode][terminatingNode] = maxCapacity;
+    }
+
+    let { flow } = edmondsKarp(capacity, sourceNode, sinkNode);
+    let reachable = findReachableNodes(capacity, flow, sourceNode);
+    let minCut = findMinCutEdges(capacity, reachable);
+
+    console.log("Minimum cut edges:");
+    minCut.forEach(edge => {
+        console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
+    });
+}
+function bellmanFord(graph, costs, source, numVertices) {
+    let dist = Array(numVertices).fill(Infinity);
+    let pred = Array(numVertices).fill(-1);
+    dist[source] = 0;
+
+    for (let i = 0; i < numVertices - 1; i++) {
+        for (let u = 0; u < numVertices; u++) {
+            for (let v = 0; v < numVertices; v++) {
+                if (graph[u][v] > 0 && dist[u] + costs[u][v] < dist[v]) {
+                    dist[v] = dist[u] + costs[u][v];
+                    pred[v] = u;
                 }
             }
         }
-        return minCut;
     }
+    return { dist, pred };
+}
 
-    function bellmanFord(graph, costs, source, numVertices) {
-        let dist = Array(numVertices).fill(Infinity);
-        let pred = Array(numVertices).fill(-1);
-        dist[source] = 0;
-    
-        for (let i = 0; i < numVertices - 1; i++) {
-            for (let u = 0; u < numVertices; u++) {
-                for (let v = 0; v < numVertices; v++) {
-                    if (graph[u][v] > 0 && dist[u] + costs[u][v] < dist[v]) {
-                        dist[v] = dist[u] + costs[u][v];
-                        pred[v] = u;
-                    }
-                }
-            }
-        }
-        return { dist, pred };
-    }
-    
-    function successiveShortestPath(capacity, costs, source, sink) {
-        let n = capacity.length;
-        let flow = Array.from({ length: n }, () => new Array(n).fill(0));
-        let minCost = 0;
-    
-        let residualCapacity = capacity.map(row => row.slice());
-    
-        while (true) {
-            let { dist, pred } = bellmanFord(residualCapacity, costs, source, n);
-            if (dist[sink] === Infinity) break;
-    
-            let pathFlow = Infinity;
-            for (let v = sink; v != source; v = pred[v]) {
-                let u = pred[v];
-                pathFlow = Math.min(pathFlow, residualCapacity[u][v]);
-            }
-    
-            for (let v = sink; v != source; v = pred[v]) {
-                let u = pred[v];
-                flow[u][v] += pathFlow;
-                flow[v][u] -= pathFlow;
-                residualCapacity[u][v] -= pathFlow;
-                residualCapacity[v][u] += pathFlow;
-                minCost += pathFlow * costs[u][v];
-            }
-        }
-    
-        return { flow, minCost };
-    }
+function successiveShortestPath(capacity, costs, source, sink) {
+    let n = capacity.length;
+    let flow = Array.from({ length: n }, () => new Array(n).fill(0));
+    let minCost = 0;
 
-    function getData(result) {
-        let lines = result.split('\n');
-        let firstLine = lines[0].split(' ');
-        const numNodes = Number(firstLine[0]);
-        const numArcs = Number(firstLine[1]);
-        const sourceNode = Number(firstLine[2]);
-        const sinkNode = Number(firstLine[3]);
+    let residualCapacity = capacity.map(row => row.slice());
 
-        let capacity = Array.from({ length: numNodes }, () => new Array(numNodes).fill(0));
-        let costs = Array.from({ length: numNodes }, () => new Array(numNodes).fill(Infinity));
+    while (true) {
+        let { dist, pred } = bellmanFord(residualCapacity, costs, source, n);
+        if (dist[sink] === Infinity) break;
 
-        for (let j = 1; j <= numArcs; j++) {
-            let arcDetails = lines[j].split(' ').map(Number);
-            let emanatingNode = arcDetails[0];
-            let terminatingNode = arcDetails[1];
-            let maxCapacity = arcDetails[2];
-            let cost = arcDetails[3];
-            capacity[emanatingNode][terminatingNode] = maxCapacity;
-            costs[emanatingNode][terminatingNode] = cost;
+        let pathFlow = Infinity;
+        for (let v = sink; v != source; v = pred[v]) {
+            let u = pred[v];
+            pathFlow = Math.min(pathFlow, residualCapacity[u][v]);
         }
 
-        let flowResult = edmondsKarp(capacity, sourceNode, sinkNode);
-        console.log("Maximum flow:", flowResult.maxFlow);
-        console.log("Flow values for each arc:");
-        flowResult.flow.forEach((row, index) => {
-            row.forEach((flow, j) => {
-                if (flow > 0) {
-                    if (index === 0) {
-                        console.log(`Flow from s to ${j}: ${flow}`);
-                    } else if (j === row.length - 1) {
-                        console.log(`Flow from ${index} to t: ${flow}`);
-                    } else {
-                        console.log(`Flow from ${index} to ${j}: ${flow}`);
-                    }
-                }
-            });
+        for (let v = sink; v != source; v = pred[v]) {
+            let u = pred[v];
+            flow[u][v] += pathFlow;
+            flow[v][u] -= pathFlow; // Track reverse flow for residual graph
+            residualCapacity[u][v] -= pathFlow;
+            residualCapacity[v][u] += pathFlow; // Update reverse capacity
+            minCost += pathFlow * costs[u][v];
+        }
+    }
+
+    let maxFlow = flow.reduce((total, row) => total + row[sink], 0);
+
+    // Output the final residual graph
+    console.log("Final Residual graph:");
+    residualCapacity.forEach((row, u) => {
+        row.forEach((residualCapacity, v) => {
+            if (residualCapacity > 0) {
+                console.log(`Residual capacity from ${u} to ${v}: ${residualCapacity}`);
+            }
         });
+    });
 
-        let { flow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
-        console.log("Flow matrix:", flow);
-        console.log("Minimum total cost:", minCost);
+    return { maxFlow, minCost };
+}
+
+
+function getDataMinCostMaxFlow(result) {
+    let lines = result.split('\n');
+    let firstLine = lines[0].split(' ');
+    const numNodes = Number(firstLine[0]);
+    const numArcs = Number(firstLine[1]);
+    const sourceNode = Number(firstLine[2]);
+    const sinkNode = Number(firstLine[3]);
+
+    let capacity = Array.from({ length: numNodes }, () => new Array(numNodes).fill(0));
+    let costs = Array.from({ length: numNodes }, () => new Array(numNodes).fill(Infinity));
+
+    for (let j = 1; j <= numArcs; j++) {
+        let arcDetails = lines[j].split(' ').map(Number);
+        let emanatingNode = arcDetails[0];
+        let terminatingNode = arcDetails[1];
+        let maxCapacity = arcDetails[2];
+        let cost = arcDetails[3];
+        capacity[emanatingNode][terminatingNode] = maxCapacity;
+        costs[emanatingNode][terminatingNode] = cost;
     }
 
-    function edmondsKarp(capacity, source, sink) {
-        let n = capacity.length;
-        let flow = Array.from({ length: n }, () => new Array(n).fill(0));
-        let maxFlow = 0;
+    let {maxFlow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
+    console.log("Maximum flow:", maxFlow);
+    console.log("Minimum total cost:", minCost);
+}
 
-        while (true) {
-            let parent = Array.from({ length: n }, () => -1);
-            let found = bfs(capacity, flow, parent, source, sink);
-            if (!found) break;
-
-            let pathFlow = Infinity;
-            let s;
-            for (let t = sink; t !== source; t = parent[t]) {
-                s = parent[t];
-                pathFlow = Math.min(pathFlow, capacity[s][t] - flow[s][t]);
-            }
-
-            for (let t = sink; t !== source; t = parent[t]) {
-                s = parent[t];
-                flow[s][t] += pathFlow;
-                flow[t][s] -= pathFlow;
-            }
-
-            maxFlow += pathFlow;
-        }
-
-        let reachable = findReachableNodes(capacity, flow, source);
-        let minCut = findMinCutEdges(capacity, reachable);
-
-        console.log("Minimum cut edges:");
-        minCut.forEach(edge => {
-            if (edge.from === 0) {
-                console.log(`Edge from s to ${edge.to} with capacity ${edge.capacity}`);
-            } else if (edge.to === n - 1) {
-                console.log(`Edge from ${edge.from} to t with capacity ${edge.capacity}`);
-            } else {
-                console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
-            }
-        });
-
-        return { maxFlow, flow, minCut };
-    }
-
-    function bfs(capacity, flow, parent, source, sink) {
-        let visited = new Array(capacity.length).fill(false);
-        let queue = [source];
-        visited[source] = true;
-
-        while (queue.length > 0) {
-            let u = queue.shift();
-
-            for (let v = 0; v < capacity.length; v++) {
-                if (!visited[v] && capacity[u][v] - flow[u][v] > 0) {
-                    queue.push(v);
-                    visited[v] = true;
-                    parent[v] = u;
-                    if (v === sink) return true;
-                }
+function dropHandler(event) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+        for (const item of event.dataTransfer.items) {
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                const fr = new FileReader();
+                fr.onload = function () {
+                    getDataMinCut(fr.result);
+                    getDataMinCostMaxFlow(fr.result);
+                };
+                fr.readAsText(file);
             }
         }
-        return false;
-    }
-
-    function dropHandler(event) {
-        event.preventDefault();
-        if (event.dataTransfer) {
-            for (const item of event.dataTransfer.items) {
-                if (item.kind === 'file') {
-                    const file = item.getAsFile();
-                    const fr = new FileReader();
-                    fr.onload = function () {
-                        getData(fr.result);
-                    };
-                    fr.readAsText(file);
-                }
-            }
-        } else {
-            let fr = new FileReader();
-            fr.onload = function () {
-                getData(fr.result);
-            }
-            fr.readAsText(event.target.files[0]);
+    } else {
+        let fr = new FileReader();
+        fr.onload = function () {
+            getDataMinCut(fr.result);
+            getDataMinCostMaxFlow(fr.result);
         }
+        fr.readAsText(event.target.files[0]);
     }
+}
 
-    function dragOverHandler(event) {
-        event.preventDefault();
-    }
-} catch (error) {
-    alert(error);
+function dragOverHandler(event) {
+    event.preventDefault();
 }
