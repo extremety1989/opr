@@ -223,7 +223,6 @@ function dropHandler(event) {
                 const file = item.getAsFile();
                 const fr = new FileReader();
                 fr.onload = function () {
-                    // Replace the function call based on the requirement
                     getDataMaxFlow(fr.result);
                     getDataMinCut(fr.result);
                     getDataMinCostMaxFlow(fr.result);
@@ -234,7 +233,6 @@ function dropHandler(event) {
     } else {
         let fr = new FileReader();
         fr.onload = function () {
-            // Replace the function call based on the requirement
             getDataMaxFlow(fr.result);
             getDataMinCut(fr.result);
             getDataMinCostMaxFlow(fr.result);
