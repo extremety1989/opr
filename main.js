@@ -45,6 +45,36 @@ function edmondsKarp(capacity, source, sink) {
     return { maxFlow, flow };
 }
 
+function getDataMaxFlow(result) {
+    let lines = result.split('\n');
+    let firstLine = lines[0].split(' ');
+    const numNodes = Number(firstLine[0]);
+    const numArcs = Number(firstLine[1]);
+    const sourceNode = Number(firstLine[2]);
+    const sinkNode = Number(firstLine[3]);
+
+    let capacity = Array.from({ length: numNodes }, () => new Array(numNodes).fill(0));
+
+    for (let j = 1; j <= numArcs; j++) {
+        let arcDetails = lines[j].split(' ').map(Number);
+        let emanatingNode = arcDetails[0];
+        let terminatingNode = arcDetails[1];
+        let maxCapacity = arcDetails[2];
+        capacity[emanatingNode][terminatingNode] = maxCapacity;
+    }
+
+    let { maxFlow, flow } = edmondsKarp(capacity, sourceNode, sinkNode);
+    console.log("----------------------------------------------------------------------");
+    console.log("Maximum flow:", maxFlow);
+    console.log("Flow values for each arc:");
+    flow.forEach((row, u) => {
+        row.forEach((flowValue, v) => {
+            if (flowValue > 0) {
+                console.log(`Flow from ${u} to ${v}: ${flowValue}`);
+            }
+        });
+    });
+}
 
 function findReachableNodes(capacity, flow, source) {
     let reachable = new Array(capacity.length).fill(false);
@@ -95,8 +125,8 @@ function getDataMinCut(result) {
     let { flow } = edmondsKarp(capacity, sourceNode, sinkNode);
     let reachable = findReachableNodes(capacity, flow, sourceNode);
     let minCut = findMinCutEdges(capacity, reachable);
-
-    console.log("Minimum cut edges:");
+    console.log("----------------------------------------------------------------------");
+    console.log("Minimum cut arcs:");
     minCut.forEach(edge => {
         console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
     });
@@ -147,18 +177,7 @@ function successiveShortestPath(capacity, costs, source, sink) {
     }
 
     let maxFlow = flow.reduce((total, row) => total + row[sink], 0);
-
-    // Output the final residual graph
-    console.log("Final Residual graph:");
-    residualCapacity.forEach((row, u) => {
-        row.forEach((residualCapacity, v) => {
-            if (residualCapacity > 0) {
-                console.log(`Residual capacity from ${u} to ${v}: ${residualCapacity}`);
-            }
-        });
-    });
-
-    return { maxFlow, minCost };
+    return { residualCapacity, maxFlow, minCost };
 }
 
 
@@ -183,9 +202,17 @@ function getDataMinCostMaxFlow(result) {
         costs[emanatingNode][terminatingNode] = cost;
     }
 
-    let {maxFlow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
+    let {residualCapacity, maxFlow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
+    console.log("----------------------------------------------------------------------");
     console.log("Maximum flow:", maxFlow);
     console.log("Minimum total cost:", minCost);
+    residualCapacity.forEach((row, u) => {
+        row.forEach((residualCapacity, v) => {
+            if (residualCapacity > 0) {
+                console.log(`Residual capacity from ${u} to ${v}: ${residualCapacity}`);
+            }
+        });
+    });
 }
 
 function dropHandler(event) {
@@ -196,6 +223,8 @@ function dropHandler(event) {
                 const file = item.getAsFile();
                 const fr = new FileReader();
                 fr.onload = function () {
+                    // Replace the function call based on the requirement
+                    getDataMaxFlow(fr.result);
                     getDataMinCut(fr.result);
                     getDataMinCostMaxFlow(fr.result);
                 };
@@ -205,6 +234,8 @@ function dropHandler(event) {
     } else {
         let fr = new FileReader();
         fr.onload = function () {
+            // Replace the function call based on the requirement
+            getDataMaxFlow(fr.result);
             getDataMinCut(fr.result);
             getDataMinCostMaxFlow(fr.result);
         }
