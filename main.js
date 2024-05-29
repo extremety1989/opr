@@ -64,13 +64,22 @@ function getDataMaxFlow(result) {
     }
 
     let { maxFlow, flow } = edmondsKarp(capacity, sourceNode, sinkNode);
-    console.log("----------------------------------------------------------------------");
-    console.log("Maximum flow:", maxFlow);
-    console.log("Flow values for each arc:");
+    document.getElementById("results").innerHTML = ""
+    for (let i = 0; i < 7; i++) {
+        document.getElementById("results").innerHTML += "<br>";
+    }
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "1)";
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "Maximum flow: " + maxFlow;
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "Flow values for each arc: ";
+    document.getElementById("results").innerHTML += "<br>";
     flow.forEach((row, u) => {
         row.forEach((flowValue, v) => {
             if (flowValue > 0) {
-                console.log(`Flow from ${u} to ${v}: ${flowValue}`);
+                document.getElementById("results").innerHTML += "Flow from " + u + " to " + v + ": " + flowValue;
+                document.getElementById("results").innerHTML += "<br>";
             }
         });
     });
@@ -125,10 +134,14 @@ function getDataMinCut(result) {
     let { flow } = edmondsKarp(capacity, sourceNode, sinkNode);
     let reachable = findReachableNodes(capacity, flow, sourceNode);
     let minCut = findMinCutEdges(capacity, reachable);
-    console.log("----------------------------------------------------------------------");
-    console.log("Minimum cut arcs:");
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "2)";
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "Minimum cut arcs:";
+    document.getElementById("results").innerHTML += "<br>";
     minCut.forEach(edge => {
-        console.log(`Edge from ${edge.from} to ${edge.to} with capacity ${edge.capacity}`);
+        document.getElementById("results").innerHTML += "Edge from " + edge.from + " to " + edge.to + " with capacity " + edge.capacity;
+        document.getElementById("results").innerHTML += "<br>";
     });
 }
 function bellmanFord(graph, costs, source, numVertices) {
@@ -203,13 +216,20 @@ function getDataMinCostMaxFlow(result) {
     }
 
     let {residualCapacity, maxFlow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
-    console.log("----------------------------------------------------------------------");
-    console.log("Maximum flow:", maxFlow);
-    console.log("Minimum total cost:", minCost);
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "3)";
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "Maximum flow: " + maxFlow;
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "Minimum total cost: " + minCost;
+    document.getElementById("results").innerHTML += "<br>";
+    document.getElementById("results").innerHTML += "Residual capacity:";
+    document.getElementById("results").innerHTML += "<br>";
     residualCapacity.forEach((row, u) => {
         row.forEach((residualCapacity, v) => {
             if (residualCapacity > 0) {
-                console.log(`Residual capacity from ${u} to ${v}: ${residualCapacity}`);
+                document.getElementById("results").innerHTML += "Residual capacity from " + u + " to " + v + ": " + residualCapacity;
+                document.getElementById("results").innerHTML += "<br>";
             }
         });
     });
