@@ -75,6 +75,7 @@ function getDataMaxFlow(result) {
     document.getElementById("results").innerHTML += "<br>";
     document.getElementById("results").innerHTML += "Flow values for each arc: ";
     document.getElementById("results").innerHTML += "<br>";
+    
     flow.forEach((row, u) => {
         row.forEach((flowValue, v) => {
             if (flowValue > 0) {
@@ -182,9 +183,9 @@ function successiveShortestPath(capacity, costs, source, sink) {
         for (let v = sink; v != source; v = pred[v]) {
             let u = pred[v];
             flow[u][v] += pathFlow;
-            flow[v][u] -= pathFlow; // Track reverse flow for residual graph
+            flow[v][u] -= pathFlow;
             residualCapacity[u][v] -= pathFlow;
-            residualCapacity[v][u] += pathFlow; // Update reverse capacity
+            residualCapacity[v][u] += pathFlow;
             minCost += pathFlow * costs[u][v];
         }
     }
