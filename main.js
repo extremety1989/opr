@@ -45,7 +45,7 @@ function edmondsKarp(capacity, source, sink) {
     return { maxFlow, flow };
 }
 
-function getDataMaxFlow(result) {
+function getResultsMaxFlow(result) {
     let lines = result.split('\n');
     let firstLine = lines[0].split(' ');
     const numNodes = Number(firstLine[0]);
@@ -114,7 +114,7 @@ function findMinCutEdges(capacity, reachable) {
     return minCut;
 }
 
-function getDataMinCut(result) {
+function getResultsMinCut(result) {
     let lines = result.split('\n');
     let firstLine = lines[0].split(' ');
     const numNodes = Number(firstLine[0]);
@@ -219,7 +219,7 @@ function johnsonsAlgorithm(graph, costs, numVertices) {
     return costs;
 }
 
-function shortestPath(capacity, costs, source, sink) {
+function minCostMaxFlow(capacity, costs, source, sink) {
     let n = capacity.length;
     let flow = Array.from({ length: n }, () => new Array(n).fill(0));
     let minCost = 0;
@@ -250,7 +250,7 @@ function shortestPath(capacity, costs, source, sink) {
     return { residualCapacity, maxFlow, minCost };
 }
 
-function MinCostMaxFlow(result) {
+function getResultsMinCostMaxFlow(result) {
     let lines = result.split('\n');
     let firstLine = lines[0].split(' ');
     const numNodes = Number(firstLine[0]);
@@ -271,7 +271,7 @@ function MinCostMaxFlow(result) {
         costs[emanatingNode][terminatingNode] = cost;
     }
 
-    let { residualCapacity, maxFlow, minCost } = shortestPath(capacity, costs, sourceNode, sinkNode);
+    let { residualCapacity, maxFlow, minCost } = minCostMaxFlow(capacity, costs, sourceNode, sinkNode);
     document.getElementById("results").innerHTML += "<br>";
     document.getElementById("results").innerHTML += "3)";
     document.getElementById("results").innerHTML += "<br>";
@@ -300,9 +300,9 @@ function dropHandler(event) {
                 const file = item.getAsFile();
                 const fr = new FileReader();
                 fr.onload = function () {
-                    getDataMaxFlow(fr.result);
-                    getDataMinCut(fr.result);
-                    MinCostMaxFlow(fr.result);
+                    getResultsMaxFlow(fr.result);
+                    getResultsMinCut(fr.result);
+                    getResultsMinCostMaxFlow(fr.result);
                 };
                 fr.readAsText(file);
             }
@@ -310,9 +310,9 @@ function dropHandler(event) {
     } else {
         let fr = new FileReader();
         fr.onload = function () {
-            getDataMaxFlow(fr.result);
-            getDataMinCut(fr.result);
-            MinCostMaxFlow(fr.result);
+            getResultsMaxFlow(fr.result);
+            getResultsMinCut(fr.result);
+            getResultsMinCostMaxFlow(fr.result);
         }
         fr.readAsText(event.target.files[0]);
     }
