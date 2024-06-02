@@ -279,7 +279,6 @@ function MinCostMaxFlow(result) {
     document.getElementById("results").innerHTML += "<br>";
     document.getElementById("results").innerHTML += "Minimum total cost: " + minCost;
     document.getElementById("results").innerHTML += "<br>";
-    document.getElementById("results").innerHTML += "Residual capacity:";
     document.getElementById("results").innerHTML += "<br>";
     residualCapacity.forEach((row, u) => {
         row.forEach((residualCapacity, v) => {
