@@ -145,6 +145,8 @@ function getDataMinCut(result) {
         document.getElementById("results").innerHTML += "<br>";
     });
 }
+
+
 function bellmanFord(graph, costs, source, numVertices) {
     let dist = Array(numVertices).fill(Infinity);
     let pred = Array(numVertices).fill(-1);
@@ -163,15 +165,70 @@ function bellmanFord(graph, costs, source, numVertices) {
     return { dist, pred };
 }
 
-function successiveShortestPath(capacity, costs, source, sink) {
+
+function dijkstra(graph, costs, source, numVertices) {
+    let dist = Array(numVertices).fill(Infinity);
+    let pred = Array(numVertices).fill(-1);
+    let visited = Array(numVertices).fill(false);
+    dist[source] = 0;
+
+    for (let i = 0; i < numVertices; i++) {
+        let u = -1;
+        for (let j = 0; j < numVertices; j++) {
+            if (!visited[j] && (u === -1 || dist[j] < dist[u])) {
+                u = j;
+            }
+        }
+
+        if (dist[u] === Infinity) break;
+
+        visited[u] = true;
+        for (let v = 0; v < numVertices; v++) {
+            if (graph[u][v] > 0 && dist[u] + costs[u][v] < dist[v]) {
+                dist[v] = dist[u] + costs[u][v];
+                pred[v] = u;
+            }
+        }
+    }
+
+    return { dist, pred };
+}
+
+function johnsonsAlgorithm(graph, costs, numVertices) {
+
+    let newGraph = Array.from({ length: numVertices + 1 }, () => new Array(numVertices + 1).fill(0));
+    let newCosts = Array.from({ length: numVertices + 1 }, () => new Array(numVertices + 1).fill(Infinity));
+    for (let u = 0; u < numVertices; u++) {
+        for (let v = 0; v < numVertices; v++) {
+            newGraph[u][v] = graph[u][v];
+            newCosts[u][v] = costs[u][v];
+        }
+        newGraph[numVertices][u] = 1;
+        newCosts[numVertices][u] = 0;
+    }
+
+    let { dist } = bellmanFord(newGraph, newCosts, numVertices, numVertices + 1);
+    let costs = Array.from({ length: numVertices }, () => new Array(numVertices).fill(Infinity));
+    for (let u = 0; u < numVertices; u++) {
+        for (let v = 0; v < numVertices; v++) {
+            if (graph[u][v] > 0) {
+                costs[u][v] = costs[u][v] + dist[u] - dist[v];
+            }
+        }
+    }
+
+    return costs;
+}
+
+function shortestPath(capacity, costs, source, sink) {
     let n = capacity.length;
     let flow = Array.from({ length: n }, () => new Array(n).fill(0));
     let minCost = 0;
-
+    let none_negative_costs = johnsonsAlgorithm(capacity, costs, n);
     let residualCapacity = capacity.map(row => row.slice());
 
     while (true) {
-        let { dist, pred } = bellmanFord(residualCapacity, costs, source, n);
+        let { dist, pred } = dijkstra(residualCapacity, none_negative_costs, source, n);
         if (dist[sink] === Infinity) break;
 
         let pathFlow = Infinity;
@@ -194,8 +251,7 @@ function successiveShortestPath(capacity, costs, source, sink) {
     return { residualCapacity, maxFlow, minCost };
 }
 
-
-function getDataMinCostMaxFlow(result) {
+function MinCostMaxFlow(result) {
     let lines = result.split('\n');
     let firstLine = lines[0].split(' ');
     const numNodes = Number(firstLine[0]);
@@ -216,7 +272,7 @@ function getDataMinCostMaxFlow(result) {
         costs[emanatingNode][terminatingNode] = cost;
     }
 
-    let {residualCapacity, maxFlow, minCost } = successiveShortestPath(capacity, costs, sourceNode, sinkNode);
+    let { residualCapacity, maxFlow, minCost } = shortestPath(capacity, costs, sourceNode, sinkNode);
     document.getElementById("results").innerHTML += "<br>";
     document.getElementById("results").innerHTML += "3)";
     document.getElementById("results").innerHTML += "<br>";
@@ -236,6 +292,8 @@ function getDataMinCostMaxFlow(result) {
     });
 }
 
+
+
 function dropHandler(event) {
     event.preventDefault();
     if (event.dataTransfer) {
@@ -246,7 +304,7 @@ function dropHandler(event) {
                 fr.onload = function () {
                     getDataMaxFlow(fr.result);
                     getDataMinCut(fr.result);
-                    getDataMinCostMaxFlow(fr.result);
+                    MinCostMaxFlow(fr.result);
                 };
                 fr.readAsText(file);
             }
@@ -256,7 +314,7 @@ function dropHandler(event) {
         fr.onload = function () {
             getDataMaxFlow(fr.result);
             getDataMinCut(fr.result);
-            getDataMinCostMaxFlow(fr.result);
+            MinCostMaxFlow(fr.result);
         }
         fr.readAsText(event.target.files[0]);
     }
