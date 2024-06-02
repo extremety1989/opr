@@ -195,7 +195,6 @@ function dijkstra(graph, costs, source, numVertices) {
 }
 
 function johnsonsAlgorithm(graph, costs, numVertices) {
-
     let newGraph = Array.from({ length: numVertices + 1 }, () => new Array(numVertices + 1).fill(0));
     let newCosts = Array.from({ length: numVertices + 1 }, () => new Array(numVertices + 1).fill(Infinity));
     for (let u = 0; u < numVertices; u++) {
@@ -208,11 +207,11 @@ function johnsonsAlgorithm(graph, costs, numVertices) {
     }
 
     let { dist } = bellmanFord(newGraph, newCosts, numVertices, numVertices + 1);
-    let costs = Array.from({ length: numVertices }, () => new Array(numVertices).fill(Infinity));
+    let final_costs = Array.from({ length: numVertices }, () => new Array(numVertices).fill(Infinity));
     for (let u = 0; u < numVertices; u++) {
         for (let v = 0; v < numVertices; v++) {
             if (graph[u][v] > 0) {
-                costs[u][v] = costs[u][v] + dist[u] - dist[v];
+                final_costs[u][v] = costs[u][v] + dist[u] - dist[v];
             }
         }
     }
